@@ -1,5 +1,6 @@
 package dev.hardaway.wardrobe.impl.player;
 
+import com.hypixel.hytale.codec.Codec;
 import com.hypixel.hytale.codec.KeyedCodec;
 import com.hypixel.hytale.codec.builder.BuilderCodec;
 import com.hypixel.hytale.codec.codecs.EnumCodec;
@@ -30,20 +31,30 @@ public class PlayerWardrobeComponent implements PlayerWardrobe, Component<Entity
                     (t, value) -> t.hiddenCosmeticTypes = value,
                     t -> t.hiddenCosmeticTypes
             ).add()
+            .append(new KeyedCodec<>("UnlockedCosmetics", new SetCodec<>(Codec.STRING, HashSet::new, false), false),
+                    (t, value) -> t.unlockedCosmetics = value != null ? value : new HashSet<>(),
+                    t -> t.unlockedCosmetics
+            ).add()
             .build();
 
     private Map<String, CosmeticSaveData> cosmetics;
     private Set<String> cosmeticIdSet;
     private Set<CosmeticType> hiddenCosmeticTypes;
+    private Set<String> unlockedCosmetics;
     private boolean dirty;
 
     public PlayerWardrobeComponent() {
-        this(new HashMap<>(), new HashSet<>());
+        this(new HashMap<>(), new HashSet<>(), new HashSet<>());
     }
 
-    protected PlayerWardrobeComponent(Map<String, CosmeticSaveData> cosmetics, Set<CosmeticType> hiddenCosmeticTypes) {
+    public PlayerWardrobeComponent(Map<String, CosmeticSaveData> cosmetics, Set<CosmeticType> hiddenCosmeticTypes) {
+        this(cosmetics, hiddenCosmeticTypes, new HashSet<>());
+    }
+
+    protected PlayerWardrobeComponent(Map<String, CosmeticSaveData> cosmetics, Set<CosmeticType> hiddenCosmeticTypes, Set<String> unlockedCosmetics) {
         this.setCosmetics(cosmetics);
-        this.hiddenCosmeticTypes = hiddenCosmeticTypes;
+        this.hiddenCosmeticTypes = hiddenCosmeticTypes != null ? hiddenCosmeticTypes : new HashSet<>();
+        this.unlockedCosmetics = unlockedCosmetics != null ? unlockedCosmetics : new HashSet<>();
     }
 
     @Override
@@ -120,6 +131,67 @@ public class PlayerWardrobeComponent implements PlayerWardrobe, Component<Entity
     }
 
     @Override
+    public Set<String> getUnlockedCosmetics() {
+        return Collections.unmodifiableSet(this.unlockedCosmetics);
+    }
+
+    @Override
+    public boolean isUnlocked(String id) {
+        return id != null && this.unlockedCosmetics.contains(id);
+    }
+
+    @Override
+    public boolean unlockCosmetic(String id) {
+        if (id == null) return false;
+        boolean added = this.unlockedCosmetics.add(id);
+        if (added) {
+            this.rebuild();
+        }
+        return added;
+    }
+
+    @Override
+    public boolean lockCosmetic(String id) {
+        if (id == null) return false;
+        boolean removed = this.unlockedCosmetics.remove(id);
+        if (removed) {
+            List<String> toRemove = new ArrayList<>();
+            for (Map.Entry<String, CosmeticSaveData> entry : this.cosmetics.entrySet()) {
+                if (id.equals(entry.getValue().getCosmeticId())) {
+                    toRemove.add(entry.getKey());
+                }
+            }
+            for (String slot : toRemove) {
+                this.removeCosmetic(slot);
+            }
+            this.rebuild();
+        }
+        return removed;
+    }
+
+    @Override
+    public void unlockAllCosmetics() {
+        boolean changed = false;
+        for (String id : CosmeticAsset.getAssetMap().getAssetMap().keySet()) {
+            if (this.unlockedCosmetics.add(id)) {
+                changed = true;
+            }
+        }
+        if (changed) {
+            this.rebuild();
+        }
+    }
+
+    @Override
+    public void lockAllCosmetics() {
+        if (!this.unlockedCosmetics.isEmpty()) {
+            this.unlockedCosmetics.clear();
+            this.clearCosmetics();
+            this.rebuild();
+        }
+    }
+
+    @Override
     public void rebuild() {
         this.dirty = true;
     }
@@ -133,18 +205,18 @@ public class PlayerWardrobeComponent implements PlayerWardrobe, Component<Entity
     @Nullable
     @Override
     public PlayerWardrobeComponent clone() {
-        return new PlayerWardrobeComponent(new HashMap<>(this.cosmetics), new HashSet<>(this.hiddenCosmeticTypes));
+        return new PlayerWardrobeComponent(new HashMap<>(this.cosmetics), new HashSet<>(this.hiddenCosmeticTypes), new HashSet<>(this.unlockedCosmetics));
     }
 
     @Override
     public boolean equals(Object o) {
         if (!(o instanceof PlayerWardrobeComponent that)) return false;
-        return cosmetics.equals(that.cosmetics) && this.hiddenCosmeticTypes.equals(that.hiddenCosmeticTypes);
+        return cosmetics.equals(that.cosmetics) && this.hiddenCosmeticTypes.equals(that.hiddenCosmeticTypes) && this.unlockedCosmetics.equals(that.unlockedCosmetics);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(cosmetics, hiddenCosmeticTypes);
+        return Objects.hash(cosmetics, hiddenCosmeticTypes, unlockedCosmetics);
     }
 
     public static ComponentType<EntityStore, PlayerWardrobeComponent> getComponentType() {

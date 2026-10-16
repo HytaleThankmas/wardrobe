@@ -102,8 +102,13 @@ public class PlayerWardrobeSystems {
                 PlayerCosmetic playerCosmetic = wardrobeComponent.getCosmetic(group);
                 if (playerCosmetic != null) {
                     dev.hardaway.wardrobe.api.cosmetic.Cosmetic cosmetic = CosmeticAsset.getAssetMap().getAsset(playerCosmetic.getCosmeticId()); // TODO: replace with registry
-                    if (cosmetic != null) {
+                    if (cosmetic != null && wardrobeComponent.isUnlocked(cosmetic.getId())) {
                         context.getCosmeticMap().put(group.getId(), cosmetic);
+                    } else if (group.getHytaleCosmeticType() != null && !context.getHiddenTypes().contains(group.getHytaleCosmeticType())) {
+                        HytaleCosmetic hytaleCosmetic = WardrobeUtil.createHytaleCosmetic(group.getHytaleCosmeticType(), cosmeticSkin);
+                        if (hytaleCosmetic != null && !context.getHiddenTypes().contains(hytaleCosmetic.getType())) {
+                            context.getCosmeticMap().put(group.getId(), hytaleCosmetic);
+                        }
                     }
                 } else if (group.getHytaleCosmeticType() != null && !context.getHiddenTypes().contains(group.getHytaleCosmeticType())) {
                     HytaleCosmetic hytaleCosmetic = WardrobeUtil.createHytaleCosmetic(group.getHytaleCosmeticType(), cosmeticSkin);

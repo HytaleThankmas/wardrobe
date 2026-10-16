@@ -269,10 +269,16 @@ public class WardrobePage extends InteractiveCustomUIPage<WardrobePage.PageEvent
                 tooltip.insert(cosmetic.getProperties().getTranslationProperties().getDescription().color(Color.LIGHT_GRAY));
             }
 
+            boolean unlocked = menu.getWardrobe().isUnlocked(cosmetic.getId());
+            if (!unlocked) {
+                tooltip.insert("\n");
+                tooltip.insert(Message.raw("Locked").color(Color.RED).italic(true));
+            }
+
             if (cosmetic.getIconPath() != null)
                 commandBuilder.set(selector + " #Icon.AssetPath", cosmetic.getIconPath());
 
-            if (cosmetic.getProperties().hasPermission(playerRef.getUuid())) {
+            if (unlocked) {
                 eventBuilder.addEventBinding(
                         CustomUIEventBindingType.Activating,
                         selector + " #Button",
