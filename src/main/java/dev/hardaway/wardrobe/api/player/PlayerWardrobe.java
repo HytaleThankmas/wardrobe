@@ -46,6 +46,30 @@ public interface PlayerWardrobe {
 
     Collection<CosmeticType> getHiddenCosmeticTypes();
 
+    java.util.Set<String> getUnlockedCosmetics();
+
+    boolean isUnlocked(String id);
+
+    default boolean isUnlocked(Cosmetic cosmetic) {
+        return this.isUnlocked(cosmetic.getId());
+    }
+
+    boolean unlockCosmetic(String id);
+
+    default boolean unlockCosmetic(Cosmetic cosmetic) {
+        return this.unlockCosmetic(cosmetic.getId());
+    }
+
+    boolean lockCosmetic(String id);
+
+    default boolean lockCosmetic(Cosmetic cosmetic) {
+        return this.lockCosmetic(cosmetic.getId());
+    }
+
+    void unlockAllCosmetics();
+
+    void lockAllCosmetics();
+
     void rebuild();
 
     PlayerWardrobe clone();

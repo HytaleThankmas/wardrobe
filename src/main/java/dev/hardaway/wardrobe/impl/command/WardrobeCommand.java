@@ -34,6 +34,10 @@ public class WardrobeCommand extends AbstractPlayerCommand {
         this.addSubCommand(new WardrobeWearCommand());
         this.addSubCommand(new WardrobeClearCommand());
         this.addSubCommand(new WardrobeResetCommand());
+        this.addSubCommand(new WardrobeUnlockCommand());
+        this.addSubCommand(new WardrobeLockCommand());
+        this.addSubCommand(new WardrobeUnlockAllCommand());
+        this.addSubCommand(new WardrobeLockAllCommand());
     }
 
     @Override

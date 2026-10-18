@@ -50,8 +50,8 @@ public class WardrobeWearCommand extends AbstractPlayerCommand {
 
         WardrobeCosmetic cosmetic = cosmeticArg.get(context);
 
-        if (!cosmetic.getProperties().hasPermission(playerRef.getUuid())) {
-            context.sendMessage(Message.raw("You do not have permission to use this cosmetic."));
+        if (!wardrobe.isUnlocked(cosmetic.getId())) {
+            context.sendMessage(Message.raw("You do not have this cosmetic unlocked."));
             return;
         }
 

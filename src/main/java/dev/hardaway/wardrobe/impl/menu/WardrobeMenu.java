@@ -71,7 +71,7 @@ public class WardrobeMenu {
     private void buildCosmetics() {
         CosmeticAsset.getAssetMap().getAssetMap().values().stream()
                 .filter(c -> c.getProperties().getWardrobeVisibility() != WardrobeVisibility.NEVER)
-                .filter(c -> c.getProperties().getWardrobeVisibility() != WardrobeVisibility.PERMISSION || c.getProperties().hasPermission(playerId))
+                .filter(c -> c.getProperties().getWardrobeVisibility() != WardrobeVisibility.PERMISSION || wardrobe.isUnlocked(c.getId()))
                 .sorted(Comparator.comparing(dev.hardaway.wardrobe.api.cosmetic.Cosmetic::getId))
                 .forEach(c -> cosmeticMap.computeIfAbsent(c.getCosmeticSlotId(), k -> new ArrayList<>()).add(c));
     }
@@ -142,6 +142,10 @@ public class WardrobeMenu {
         if (cosmetic == null) {
             if (worn == null) return;
             cosmetic = Objects.requireNonNull(CosmeticAsset.getAssetMap().getAsset(worn.getCosmeticId())); // TODO: registry
+        }
+
+        if (!wardrobe.isUnlocked(cosmetic.getId())) {
+            return;
         }
 
         if (cosmetic instanceof AppearanceCosmetic a) {
