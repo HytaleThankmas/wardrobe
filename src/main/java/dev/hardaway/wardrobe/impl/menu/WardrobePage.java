@@ -335,7 +335,8 @@ public class WardrobePage extends InteractiveCustomUIPage<WardrobePage.PageEvent
         int rowHeight = 150;
         int rowSpacing = 30;
 
-        double rows = Math.max(0, 4.8 - optionRows - variantRows);
+        double baseRows = variantRows > 0 ? (4.8 - variantRows) : 3.8;
+        double rows = Math.max(0, baseRows - optionRows);
 
         int height = (int) (rowHeight * rows + rowSpacing * Math.max(0, rows - 1));
 

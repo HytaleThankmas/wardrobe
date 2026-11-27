@@ -2,6 +2,7 @@ package dev.hardaway.wardrobe.impl.menu;
 
 import com.hypixel.hytale.common.util.StringCompareUtil;
 import dev.hardaway.wardrobe.WardrobeUtil;
+import dev.hardaway.wardrobe.api.cosmetic.Cosmetic;
 import dev.hardaway.wardrobe.api.cosmetic.WardrobeCosmetic;
 import dev.hardaway.wardrobe.api.cosmetic.WardrobeCosmeticSlot;
 import dev.hardaway.wardrobe.api.cosmetic.appearance.Appearance;
@@ -72,7 +73,8 @@ public class WardrobeMenu {
         CosmeticAsset.getAssetMap().getAssetMap().values().stream()
                 .filter(c -> c.getProperties().getWardrobeVisibility() != WardrobeVisibility.NEVER)
                 .filter(c -> c.getProperties().getWardrobeVisibility() != WardrobeVisibility.PERMISSION || wardrobe.isUnlocked(c.getId()))
-                .sorted(Comparator.comparing(dev.hardaway.wardrobe.api.cosmetic.Cosmetic::getId))
+                .sorted(Comparator.<CosmeticAsset>comparingInt(c -> wardrobe.isUnlocked(c.getId()) ? 0 : 1)
+                        .thenComparing(Cosmetic::getId))
                 .forEach(c -> cosmeticMap.computeIfAbsent(c.getCosmeticSlotId(), k -> new ArrayList<>()).add(c));
     }
 
@@ -87,7 +89,12 @@ public class WardrobeMenu {
     public List<WardrobeCosmetic> getCosmetics() {
         List<WardrobeCosmetic> cosmetics = cosmeticMap.getOrDefault(selectedSlot, List.of());
 
-        if (searchQuery.isEmpty()) return cosmetics;
+        if (searchQuery.isEmpty()) {
+            return cosmetics.stream()
+                    .sorted(Comparator.<WardrobeCosmetic>comparingInt(c -> wardrobe.isUnlocked(c.getId()) ? 0 : 1)
+                            .thenComparing(Cosmetic::getId))
+                    .toList();
+        }
 
         Object2IntMap<WardrobeCosmetic> scores = new Object2IntOpenHashMap<>();
         for (WardrobeCosmetic c : cosmetics) {
@@ -96,7 +103,9 @@ public class WardrobeMenu {
         }
 
         return scores.keySet().stream()
-                .sorted(Comparator.comparingInt(scores::getInt).reversed())
+                .sorted(Comparator.<WardrobeCosmetic>comparingInt(c -> wardrobe.isUnlocked(c.getId()) ? 0 : 1)
+                        .thenComparing(Comparator.comparingInt(scores::getInt).reversed())
+                        .thenComparing(Cosmetic::getId))
                 .toList();
     }
 
