@@ -193,6 +193,7 @@ public class PlayerWardrobeSystems {
                     "Wardrobe_" + playerRef.getUuid() + "_" + contextModel.getModelAssetId(),
                     contextModel.getScale(),
                     contextModel.getRandomAttachmentIds(),
+                    contextModel.getConditionalAttachmentIds(),
                     modelAttachments.toArray(ModelAttachment[]::new), // Skin attachments
                     contextModel.getBoundingBox(),
                     contextModel.getModel(), // Model
@@ -208,6 +209,7 @@ public class PlayerWardrobeSystems {
                     contextModel.getLight(),
                     contextModel.getParticles(),
                     contextModel.getTrails(),
+                    contextModel.getBlockCollisionEffects(),
                     contextModel.getPhysicsValues(),
                     contextModel.getDetailBoxes(),
                     contextModel.getPhobia(),
